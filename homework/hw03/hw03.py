@@ -23,6 +23,13 @@ def num_eights(pos):
     True
     """
     "*** YOUR CODE HERE ***"
+    if pos == 0:
+        return 0
+    
+    if pos%10 == 8:
+        return 1 + num_eights(pos//10)
+    else:
+        return num_eights(pos//10) 
 
 
 def pingpong(n):
@@ -59,7 +66,20 @@ def pingpong(n):
     True
     """
     "*** YOUR CODE HERE ***"
+    def flag(n):
+        if n == 0:
+            return 1
+        
+        if n%8 == 0 or num_eights(n) > 0:
+            return -flag(n-1)
+        else:
+            return flag(n-1)
+    
 
+    if n == 0:
+        return n
+    
+    return flag(n-1)+pingpong(n-1)
 
 def missing_digits(n):
     """Given a number a that is in sorted, non-decreasing order,
@@ -89,6 +109,14 @@ def missing_digits(n):
     True
     """
     "*** YOUR CODE HERE ***"
+    if n<10:
+        return 0
+    
+    curr_digit, prev_digit = n%10, (n//10)%10
+    if prev_digit == curr_digit:
+        return  missing_digits(n//10)  
+    else:
+        return curr_digit - prev_digit -1 + missing_digits(n//10)
 
 
 def ascending_coin(coin):
@@ -145,6 +173,16 @@ def count_coins(change):
     True
     """
     "*** YOUR CODE HERE ***"
+    def do_count_coins(change, max_coin):
+        if change < 0 or max_coin == None:
+            return 0
+        if change == 0:
+            return 1
+        
+        return do_count_coins(change-max_coin, max_coin) + do_count_coins(change, descending_coin(max_coin))
+
+    return do_count_coins(change, 25)
+
 
 
 def print_move(origin, destination):
@@ -181,7 +219,10 @@ def move_stack(n, start, end):
     """
     assert 1 <= start <= 3 and 1 <= end <= 3 and start != end, "Bad start/end"
     "*** YOUR CODE HERE ***"
-
+    if n>0:
+        move_stack(n-1, start, 6-(start+end))
+        print_move(start, end)
+        move_stack(n-1, 6-(start+end), end)
 
 from operator import sub, mul
 
@@ -197,4 +238,4 @@ def make_anonymous_factorial():
     ...     ['Assign', 'AnnAssign', 'AugAssign', 'NamedExpr', 'FunctionDef', 'Recursion'])
     True
     """
-    return 'YOUR_EXPRESSION_HERE'
+    return (lambda f: (lambda x: f(f, x)))(lambda g, n1: 1 if n1 == 0 else n1 * g(g, n1 - 1))
