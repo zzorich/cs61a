@@ -52,12 +52,14 @@ def planet(size):
     """Construct a planet of some size."""
     assert size > 0
     "*** YOUR CODE HERE ***"
+    return ['planet', size]
 
 
 def size(w):
     """Select the size of a planet."""
     assert is_planet(w), 'must call size on a planet'
     "*** YOUR CODE HERE ***"
+    return w[1]
 
 
 def is_planet(w):
@@ -118,7 +120,13 @@ def balanced(m):
     True
     """
     "*** YOUR CODE HERE ***"
-
+    if is_planet(m):
+        return True
+    assert is_mobile(m), 'Must test on a mobile or planet.'
+    arm_l, arm_r = left(m), right(m)
+    end_l, end_r = end(arm_l), end(arm_r)
+    return total_weight(end_l)*length(arm_l) == total_weight(end_r)*length(arm_r) and balanced(end_l) and balanced(end_r)
+    
 
 def totals_tree(m):
     """Return a tree representing the mobile with its total weight at the root.
@@ -150,6 +158,13 @@ def totals_tree(m):
     True
     """
     "*** YOUR CODE HERE ***"
+    if is_planet(m):
+        return tree(size(m))
+    
+    assert is_mobile(m), 'Input should be a mobile or planet'
+    m_weight = total_weight(m)
+    end_l, end_r = end(left(m)), end(right(m))
+    return tree(m_weight, [totals_tree(end_l), totals_tree(end_r)])
 
 
 def replace_loki_at_leaf(t, lokis_replacement):
@@ -182,6 +197,13 @@ def replace_loki_at_leaf(t, lokis_replacement):
     True
     """
     "*** YOUR CODE HERE ***"
+    if is_leaf(t):
+        if label(t) == 'loki':
+            return tree(lokis_replacement)
+        else:
+            return t
+    assert is_tree(t), 'Input must be a tree'
+    return tree(label(t), [replace_loki_at_leaf(b, lokis_replacement) for b in branches(t)])
 
 
 def has_path(t, word):
@@ -216,7 +238,18 @@ def has_path(t, word):
     """
     assert len(word) > 0, 'no path for empty word.'
     "*** YOUR CODE HERE ***"
+    assert is_tree(t), 'Input should be a tree.'
 
+    if len(word) == 1:
+        return label(t) == word
+    
+    word_first_c, word_rest = word[0], word[1:]
+    if label(t) == word_first_c:
+        for b in branches(t):
+            if has_path(b, word_rest):
+                return True
+
+    return False
 
 def preorder(t):
     """Return a list of the entries in this tree in the order that they
@@ -229,7 +262,16 @@ def preorder(t):
     [2, 4, 6]
     """
     "*** YOUR CODE HERE ***"
+    assert is_tree(t), 'Input should be a tree.'
 
+    l = [label(t)]
+    if is_leaf(t):
+        return l
+    else:
+        for b in branches(t):
+            l += preorder(b)
+    
+    return l
 
 def str_interval(x):
     """Return a string representation of interval x."""
@@ -253,11 +295,13 @@ def interval(a, b):
 def lower_bound(x):
     """Return the lower bound of interval x."""
     "*** YOUR CODE HERE ***"
+    return x[0]
 
 
 def upper_bound(x):
     """Return the upper bound of interval x."""
     "*** YOUR CODE HERE ***"
+    return x[1]
 
 
 def str_interval(x):
@@ -276,17 +320,19 @@ def add_interval(x, y):
 def mul_interval(x, y):
     """Return the interval that contains the product of any value in x and any
     value in y."""
-    p1 = x[0] * y[0]
-    p2 = x[0] * y[1]
-    p3 = x[1] * y[0]
-    p4 = x[1] * y[1]
-    return [min(p1, p2, p3, p4), max(p1, p2, p3, p4)]
+    p1 = lower_bound(x) * lower_bound(y)
+    p2 = lower_bound(x) * upper_bound(y)
+    p3 = upper_bound(x) * lower_bound(y)
+    p4 = upper_bound(x) * upper_bound(y)
+    return interval(min(p1, p2, p3, p4), max(p1, p2, p3, p4))
 
 
 def sub_interval(x, y):
     """Return the interval that contains the difference between any value in x
     and any value in y."""
     "*** YOUR CODE HERE ***"
+    minus_1 = interval(-1, -1)
+    return add_interval(x, mul_interval(minus_1, y))
 
 
 def div_interval(x, y):
@@ -294,6 +340,7 @@ def div_interval(x, y):
     any value in y. Division is implemented as the multiplication of x by the
     reciprocal of y."""
     "*** YOUR CODE HERE ***"
+    assert not (lower_bound(y)<= 0 and upper_bound(y)>=0), 'Avoid divide by 0.'
     reciprocal_y = interval(1 / upper_bound(y), 1 / lower_bound(y))
     return mul_interval(x, reciprocal_y)
 
@@ -318,8 +365,8 @@ def check_par():
     >>> lower_bound(x) != lower_bound(y) or upper_bound(x) != upper_bound(y)
     True
     """
-    r1 = interval(1, 1)  # Replace this line!
-    r2 = interval(1, 1)  # Replace this line!
+    r1 = interval(-200, -100)  # Replace this line!
+    r2 = interval(2, 3)  # Replace this line!
     return r1, r2
 
 
