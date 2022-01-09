@@ -145,12 +145,10 @@ def remainders_generator(m):
     """
     "*** YOUR CODE HERE ***"
     def eqv_class(i):
-        itor = 1
-        while True:
-            if itor % m == i:
-                yield itor
-            itor += 1
-            
+        for n in naturals():
+            if n%m == i:
+                yield n
+
     for i in range(m):
         yield eqv_class(i)
     
